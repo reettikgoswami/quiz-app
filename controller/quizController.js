@@ -50,16 +50,16 @@ var createQuiz = async (req, res, next) => {
 
 var getQuiz = async (req, res, next) => {
   try {
-    const quizId = req.params.id; // id = 5ed8970c2370324b8994145b
+    const quizId = req.params.id;
     var quiz = await Quiz.findById(quizId)
       .populate({
         path: "questions",
-        model : "Question"
+        model: "Question",
       })
       .exec();
 
     if (!quiz) {
-      res.status(200).send({mesasge : "Quiz not found"});
+      res.status(200).send({ mesasge: "Quiz not found" });
     }
 
     res.status(200).send(quiz);
@@ -70,46 +70,82 @@ var getQuiz = async (req, res, next) => {
 
 var updateQuiz = async (req, res, next) => {
   try {
-    const quizId = req.params.id;
-    let { questions, title } = req.body;
+    const quizId = req.params.id; //id = 5ed8a24eb9d97d67d24ad8bb
 
-    for (let i = 0; i < questions.length; i++) {
-      let updatequestion = await Question.findByIdAndUpdate(
-        questions[i]._id,
-        questions[i],
-        { new: true }
-      ).exec();
+    let { questions } = req.body;
+    var quiz = await Quiz.findById(quizId).lean();
+
+    if (!quiz) {
+      res.status("200").send({ message: "Quiz not found" });
     }
 
-    let updatedQuizObject = {
-      title,
-    };
+    // validate all questions
+    var validQuestions = [];
+    var validQuestionIds = [];
 
-    let quiz = await Quiz.findByIdAndUpdate(quizId, updatedQuizObject, {
-      new: true,
+    questions.forEach((question) => {
+      if (utils.isValidQuestion(question)) {
+        if (!question._id) {
+          question._id = mongoose.Types.ObjectId();
+        }
+        validQuestionIds.push(question._id);
+        validQuestions.push(question);
+      }
     });
-    res.status(200).send(quiz);
+
+    var deleteQuestionIds = quiz.questions.filter((id) => {
+      return validQuestionIds.includes(id);
+    });
+
+    await Question.deleteMany({ _id: { $in: deleteQuestionIds } });
+
+    //  update all the question
+    var updatedIds = [];
+    for (let i = 0; i < validQuestions.length; i++) {
+      let question = validQuestions[i];
+
+      var updatedQuestion = await Question.findByIdAndUpdate(
+        question._id,
+        question,
+        { upsert: true , new : true}
+      );
+
+      updatedIds.push(updatedQuestion._id);
+    }
+
+    req.body.questions = updatedIds;
+
+    var updatedQuiz = await Quiz.findByIdAndUpdate(quizId, req.body, {
+      new: true,
+    }).populate({
+      path: "questions",
+      model: "Question",
+    })
+    .exec();
+
+    res.status(200).send(updatedQuiz);
   } catch (error) {
-    next(error)
+    next(error);
   }
 };
 
 var deleteQuiz = async (req, res, next) => {
   try {
-    const quizId = req.params.id; 
+    const quizId = req.params.id;
     let quiz = await Quiz.findById(quizId);
 
     if (!quiz) {
-      res.status(200).send({mesasge : "Quiz not found"});
+      res.status(200).send({ mesasge: "Quiz not found" });
     }
 
     let { questions } = quiz;
 
-    let deletedQuestionsStatus = await Question.deleteMany({ _id :{ $in : questions } })
+    let deletedQuestionsStatus = await Question.deleteMany({
+      _id: { $in: questions },
+    });
     let deletedQuizStatus = await Quiz.findByIdAndDelete(quizId);
-    
-     res.status(200).send({ mesasge : "Deleted succesfully "});
-     
+
+    res.status(200).send({ mesasge: "Deleted succesfully " });
   } catch (error) {
     console.error(error);
   }
