@@ -5,7 +5,7 @@ var router = express.Router();
 
 router.post('/', quizController.createQuiz);
 
-router.get("/:id" , quizController.getQuiz);
+router.get("/:id" , quizController.showQuiz);
 
 router.put("/:id" , quizController.updateQuiz);
 
