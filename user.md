@@ -1,8 +1,8 @@
 {
   "user" : {
      "name" : "reettik goswami",
-     "username" : "reettik",
-     "email" : "reettik97@gmail.com",
-     "password" : "12345678890",
+     "username" : "reettik1",
+     "email" : "reettik197@gmail.com",
+     "password" : "12345678890"
   }
 }

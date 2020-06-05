@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 
-var {register} = require("../controller/userController")
-router.post('/' , register);
+var {register , login} = require("../controller/userController")
+router.post('/users' , register);
+router.post("/users/login" , login);
+
 
 module.exports = router;
