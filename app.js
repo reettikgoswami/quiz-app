@@ -7,6 +7,7 @@ var mongoose = require("mongoose");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var quizRouter = require("./routes/quiz");
+var questionRoute = require("./routes/question");
 
 mongoose.connect(
   "mongodb://localhost:27017/quiz",
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/quiz" , quizRouter)
+app.use("/quiz" , quizRouter);
+app.use("/questions" , questionRoute);
 
 module.exports = app;

@@ -20,6 +20,7 @@ var createQuiz = async (req, res, next) => {
     }
 
     var { questions, title } = req.body.quiz;
+    
     quiz.title = title;
     quiz.authorID = "12345676543";
 
@@ -116,6 +117,8 @@ var deleteQuiz = async (req, res, next) => {
     next(error);
   }
 };
+
+
 
 module.exports = {
   createQuiz,
