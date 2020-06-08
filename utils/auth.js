@@ -15,6 +15,34 @@ var generateJwtToken = async (user, next) => {
   }
 };
 
+var validateJwtToken = async (req , res , next) => {
+  try {
+    const token = req.header["authorization"];
+    if(token){
+        var payload = await jwt.verify(token , process.env.SECRET);
+        req.user = {
+          ...payload,
+          token
+        }
+       next(); 
+    }else{
+      res.status(400).json({
+        error: "Token required"
+      });
+    }
+    
+
+  } catch (error) {
+    res.status(400).json({
+      error: "Wrong token "
+    });
+  }
+}
+
+
+
+
 module.exports = {
   generateJwtToken,
+  validateJwtToken
 }
